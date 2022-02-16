@@ -55,10 +55,18 @@
 							<div class="card-body n-5">
 								
 								<div class="form-group">
+									<span class="h4">Private Key Encryption</span>
+									<p>Private key encryption is the form of encryption where only a single private key can encrypt and decrypt information. 
+										It is a fast process since it uses a single key. 
+										However, protecting one key creates a key management issue when everyone is using private keys. 
+										The private key may be stolen or leaked. 
+										Key management requires prevention of these risks and necessitates changing the encryption key often, and appropriately distributing the key.</p>
+								</div>
+								<div class="form-group">
 									<label for="password">PEM Private Key</label>
-									<textarea class="form-control" id="pem-data" rows="10" name="inputtext">{{inputtext}}</textarea>
+									<textarea class="form-control" id="pem-data" rows="10" name="inputtext" required>{{inputtext}}</textarea>
 									
-									<details>
+									<!--details>
 										<summary>
 											Generate Sample Key
 										</summary>
@@ -67,7 +75,7 @@
 											<button class="btn btn-secondary btn-xs" type='submit' name="action" value='generate_ecc'><span class="btn-label"><i class="fa fa-check"></i></span>Download</button>
 										</span>
 
-									</details>
+									</details-->
 									
 								</div>
 									
@@ -77,7 +85,7 @@
 								<div class="form-group">
 								{% endif %}	
 									<label for="password">Input password to derypt PEM private key</label>
-									<input type="password" class="form-control" name="inpass" id="inpass" placeholder="password for private key decryption">
+									<input type="password" class="form-control" name="inpass" id="inpass" placeholder="password for private key decryption", >
 								</div>
 
 								{% if errtype == 'outpass' %}
@@ -92,7 +100,7 @@
 										<button class="btn btn-default btn-border" type="button" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false">Ciphers</button>
 										<select class="form-control form-control" id="pem_selected" name="cipher">
 											{% for element in aes_alg_list %}
-											<option value="{{element}}">{{ element  }} </option>
+											<option value="{{element}}">{{ element }} </option>
 											{% endfor %}
 										</select>
 									</div>
@@ -101,13 +109,13 @@
 
 								
 							<div class="form-group">
-								<button class="btn btn-primary" type="submit" name="action" value="enc"><span class="btn-label"><i class="fa fa-check"></i></span>
+								<button class="btn btn-primary btn-round" type="submit" name="action" value="enc"><span class="btn-label"><i class="fa fa-check"></i></span>
 									Encrypt
 								</button>
-	    						<button class="btn btn-warning" type="submit" name="action" value="dec"><span class="btn-label"><i class="fas fa-circle-notch"></i></span>
+	    						<button class="btn btn-warning  btn-round" type="submit" name="action" value="dec"><span class="btn-label"><i class="fas fa-circle-notch"></i></span>
 									Decrypt
 								</button>
-								<button class="btn btn-secondary" type="submit" name="action" value="reenc"><span class="btn-label"><i class="fas fa-circle-notch"></i></span>
+								<button class="btn btn-secondary  btn-round" type="submit" name="action" value="reenc"><span class="btn-label"><i class="fas fa-circle-notch"></i></span>
 									Re-encrypt
 								</button>
 							</div>

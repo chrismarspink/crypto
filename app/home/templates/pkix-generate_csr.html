@@ -50,9 +50,11 @@
 						</div>
 						<div class="card-body">
 
+
+
 								<div class="form-group">
 
-									<div class="col-sm-12 col-lg-6">
+									<!--div class="col-sm-12 col-lg-6">
 										<div class="card p-3">
 											<div class="d-flex align-items-center">
 												<span class="stamp stamp-md bg-secondary mr-3">
@@ -64,7 +66,32 @@
 												</div>
 											</div>
 										</div>
+									</div-->
+									<div class="form-gropup">
+										<span class="h4">CSR(Cerficate Signing Request)</span>
+										<ul>
+											<li>
+												<p>A certificate request consists of three parts: "certificate request information", a signature algorithm identifier, and a digital signature for the certificate request information. The authentication request information consists of a set of properties that provide the entity's distinguished name, the entity's public key, and other information about the entity.</p>
+											</li>
+										</ul>
 									</div>
+		
+									<div class="form-gropup">
+										<span class="h4">Distinguished name</span>
+										<ul>
+											<li>
+												<p>Distinguished name (DN) is a term that describes the identifying information in a certificate and is part of the certificate itself. A certificate contains DN information for both the owner or requestor of the certificate (called the Subject DN) and the CA that issues the certificate (called the Issuer DN). Depending on the identification policy of the CA that issues a certificate, the DN can include a variety of information.</p>
+											</li>
+										</ul>
+									</div>
+
+
+									<div class="form-check">
+										<label for="exampleFormControlFile1">Private Key File</label>
+										<input type="file" name="inputfile" class="form-control-file" id="prikeyfile">
+									</div>
+
+								
 									
 									<div class="form-check">
 										<label>Private Key File Format: </label>
@@ -173,11 +200,11 @@
 								</div>
 			
 								<div class="form-group">
-									<button class="btn btn-primary" type='submit' name='action' value='csr'><span class="btn-label"><i class="fa fa-check"></i></span>
-										Generate CSR
+									<button class="btn btn-default btn-round btn-border" type='submit' name='action' value='csr'><span class="btn-label"><i class="fa fa-check"></i></span>
+										Generate Key Pair and CSR
 									</button>
-									<button class="btn btn-primary" type='submit' name='action' value='certificate' id='gen_pkey'><span class="btn-label"><i class="fa fa-check"></i></span>
-										Generate X509 Certificate
+									<button class="btn btn-primary  btn-round btn-border" type='submit' name='action' value='certificate' id='gen_pkey'><span class="btn-label"><i class="fa fa-check"></i></span>
+										Generate Key Pair, CSR and X509 Certificate
 									</button>
 								</div>
 
@@ -270,6 +297,43 @@
 							</div>	
 						</div>
 	  				{%endif%}
+
+					  <div class="card">
+						<div class="card-header">
+							<h4 class="card-title">Additional Information</h4>
+						</div>
+						<div class="card-body">
+							<div class="form-group">
+								<span class="h4">Subject Alternative Name</span>
+										<ul>
+											<li>
+												<p>A SAN or subject alternative name is a structured way to indicate all of the domain names and IP addresses that are secured by the certificate. Included on the short list of items that are considered a SAN are subdomains and IP addresses.</p>
+											</li>
+
+											<li>
+												<p>When additional actions on a website need to be secured, the SANs need to be included on an SSL/TLS certificate so that the DNS server can resolve the IP address to the domain name. This will give the page the HTTPS indicator that meets browser guidelines and that give visitors confidence to transact on your website.</p>
+											</li>
+											<li>
+												<p>This is what the SANs would like in the certificate details:</p>
+												<ul>
+													<li>SAN 1: DNS Name=example.com</li>
+													<li>SAN 2: DNS Name=www.example.com</li>
+													<li>SAN 3: DNS Name=example.net</li>
+													<li>SAN 4: DNS Name=mail.example.com</li>
+													<li>SAN 5: DNS Name=support.example.com</li>
+													<li>SAN 6: DNS Name=example2.com/<li>
+													<li>SAN 7: IP Address=93.184.216.34</li>
+													<li>SAN 8: IP Address= 2606:2800:220:1:248:1893:25c8:1946</li>
+												</ul>
+											</li>
+											<li>
+												<p>The SANs information appears in the SSL/TLS certificate details that can be viewed by clicking on the locked padlock in the address bar of most web browsers.</p>
+											</li>
+										</ul>
+
+							</div>
+						</div>	
+					</div>
 
 					
 				</div>

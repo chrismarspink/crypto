@@ -438,6 +438,7 @@ def pkix_generate_csr():
     is_encrypted=False
     filename = None
     csr_pem = csr_pem_text = cert_pem = cert_pem_text = None
+    segment="pkix-generate_csr.html"
 
     if request.method == 'POST':
 
@@ -468,7 +469,8 @@ def pkix_generate_csr():
             return render_template( '/pkix-generate_csr.html'
                 , errtype="inputfile"
                 , errmsg="Invalid file name"
-                ,env=env, csr_pem=csr_pem, csr_pem_text=csr_pem_text, cert_pem=cert_pem, cert_pem_text=cert_pem_text)
+                ,env=env, csr_pem=csr_pem, csr_pem_text=csr_pem_text, cert_pem=cert_pem, cert_pem_text=cert_pem_text
+                ,segment=segment)
             
         infile = os.path.join(app_config.UPLOAD_DIR, f.filename)
         f.save(infile)
@@ -515,13 +517,13 @@ def pkix_generate_csr():
         
         if is_encrypted:
                 if not inpass:
-                    return render_template( '/pkix-generate_csr.html', errtype="inpass", errmsg="Invalid private key passphrase")
+                    return render_template( '/pkix-generate_csr.html', errtype="inpass", errmsg="Invalid private key passphrase",segment=segment)
                 cmd = cmd + " -passin pass:%s" % inpass
 
         try:
             output_pem = run_cmd(cmd)
         except:
-            return render_template( '/pkix-generate_csr.html', errtype="error", errmsg="fail to generate csr/certificate")
+            return render_template( '/pkix-generate_csr.html', errtype="error", errmsg="fail to generate csr/certificate",segment=segment)
 
         ###csr_pem = csr_pem_text = cert_pem = cert_pem_text = None
 
@@ -536,13 +538,13 @@ def pkix_generate_csr():
             cert_pem_text = output_pem_text.decode()
             csr_pem = csr_pem_text = None
         else:
-            return render_template( '/pkix-generate_csr.html', errtype="error", errmsg="Fail to generate CSR/Certificate!")
+            return render_template( '/pkix-generate_csr.html', errtype="error", errmsg="Fail to generate CSR/Certificate!",segment=segment)
 
-        return render_template( '/pkix-generate_csr.html', env=env, csr_pem=csr_pem, csr_pem_text=csr_pem_text, cert_pem=cert_pem, cert_pem_text=cert_pem_text)   
+        return render_template( '/pkix-generate_csr.html', env=env, csr_pem=csr_pem, csr_pem_text=csr_pem_text, cert_pem=cert_pem, cert_pem_text=cert_pem_text,segment=segment)   
 
         
 
-    return render_template( '/pkix-generate_csr.html', env=env)
+    return render_template( '/pkix-generate_csr.html', env=env,segment=segment)
 
 
 
@@ -554,6 +556,7 @@ def pkix_verify_csr():
     is_encrypted=False
     filename = None
     csr_pem = verify_result = output = None
+    segment="pkix-verify_csr.html"
 
     if request.method == 'POST':
 
@@ -566,11 +569,11 @@ def pkix_verify_csr():
         
         if not csr_pem:
             app.logger.info("Invalid CSR: %s" % csr_pem)
-            return render_template( '/pkix-verify_csr.html', errtype="inputfile", errmsg="NO CSR MESSAGE", env=env)
+            return render_template( '/pkix-verify_csr.html', errtype="inputfile", errmsg="NO CSR MESSAGE", env=env, segment=segment)
 
         if not csr_pem.startswith("-----BEGIN CERTIFICATE REQUEST-----"):
             app.logger.info("Invalid CSR: %s" % csr_pem)
-            return render_template( '/pkix-verify_csr.html', errtype="inputfile", errmsg="INVALID FORMAT CSR MESSAGE", env=env)
+            return render_template( '/pkix-verify_csr.html', errtype="inputfile", errmsg="INVALID FORMAT CSR MESSAGE", env=env, segment=segment)
 
         try:
             verify_result, output = do_openssl2(csr_pem.encode('utf-8'), b"req", b"-noout", b"-text", b"-verify")
@@ -579,7 +582,7 @@ def pkix_verify_csr():
             app.logger.info("verify_result: %s" % verify_result)    
         except:
             #app.logger.info("verify_result: %s" % verify_result)    
-            return render_template( '/pkix-verify_csr.html', errtype="error", errmsg="FAIL TO VERIFY CSR MESSAGE")
+            return render_template( '/pkix-verify_csr.html', errtype="error", errmsg="FAIL TO VERIFY CSR MESSAGE" , segment=segment)
 
         result = verify_result.decode()
         details = None
@@ -590,9 +593,9 @@ def pkix_verify_csr():
         if show == "details" and output:
             details = output.decode()
 
-        return render_template( '/pkix-verify_csr.html', env=env, result=result, inputtext=csr_pem, details=details)   
+        return render_template( '/pkix-verify_csr.html', env=env, result=result, inputtext=csr_pem, details=details, segment=segment)   
 
-    return render_template( '/pkix-verify_csr.html', env=env)
+    return render_template( '/pkix-verify_csr.html', env=env, segment=segment)
 
 
 @blueprint.route('/pkix-verify_certificate.html', methods=['GET', 'POST'])
@@ -602,6 +605,7 @@ def pkix_verify_certificate():
     is_encrypted=False
     filename = None
     input_pem = verify_result = output = None
+    segment="pkix-verify_certificate.html"
 
     if request.method == 'POST':
 
@@ -614,16 +618,16 @@ def pkix_verify_certificate():
         
         if not input_pem:
             app.logger.info("Invalid Certificate: %s" % input_pem)
-            return render_template( '/pkix-verify_certificate.html', errtype="inputfile", errmsg="NO CERTIFICATE", env=env)
+            return render_template( '/pkix-verify_certificate.html', errtype="inputfile", errmsg="NO CERTIFICATE", env=env, segment=segment)
 
         if not input_pem.startswith("-----BEGIN CERTIFICATE-----"):
             app.logger.info("Invalid CSR: %s" % input_pem)
-            return render_template( '/pkix-verify_certificate.html', errtype="inputfile", errmsg="INVALID FORMAT CERTIFICATE", env=env)
+            return render_template( '/pkix-verify_certificate.html', errtype="inputfile", errmsg="INVALID FORMAT CERTIFICATE", env=env, segment=segment)
 
         f = request.files.get("cafile", None)
         if not f:
             app.logger.info("file not found")
-            return render_template( '/pkix-verify_certificate.html', errtype="cafileerror", errmsg="INVALID CA CERTIFICATES FILE")
+            return render_template( '/pkix-verify_certificate.html', errtype="cafileerror", errmsg="INVALID CA CERTIFICATES FILE", segment=segment)
             
         cafile = os.path.join(app_config.UPLOAD_DIR, f.filename)
         f.save(cafile)
@@ -645,7 +649,7 @@ def pkix_verify_certificate():
             app.logger.info("verify_result: %s" % verify_result)    
         except:
             #app.logger.info("verify_result: %s" % verify_result)    
-            return render_template( '/pkix-verify_certificate.html', errtype="error", errmsg="FAIL TO VERIFY CERTIFICATE")
+            return render_template( '/pkix-verify_certificate.html', errtype="error", errmsg="FAIL TO VERIFY CERTIFICATE", segment=segment)
 
         result = verify_result.decode()
         details = None
@@ -656,9 +660,9 @@ def pkix_verify_certificate():
         #if show == "details" and output:
         #    details = output.decode()
 
-        return render_template( '/pkix-verify_certificate.html', env=env, result=result, inputtext=input_pem) #, details=details)   
+        return render_template( '/pkix-verify_certificate.html', env=env, result=result, inputtext=input_pem, segment=segment)   
 
-    return render_template( '/pkix-verify_certificate.html', env=env)
+    return render_template( '/pkix-verify_certificate.html', env=env, segment=segment)
 
 
 
@@ -668,6 +672,7 @@ def ssl_getcert():
     is_encrypted=False
     filename = None
     csr_pem = csr_pem_text = cert_pem = cert_pem_text = None
+    segment="ssl-getcert.html"
 
     if request.method == 'POST':
 
@@ -689,11 +694,11 @@ def ssl_getcert():
         try:
             cert_txt = run_cmd(cmd)
         except:
-            return render_template( '/ssl-getcert.html', env=env, errtype="error", errmsg="fail to extract ssl certificate")
+            return render_template( '/ssl-getcert.html', env=env, errtype="error", errmsg="fail to extract ssl certificate", segment=segment)
 
-        return render_template( '/ssl-getcert.html', env=env, cert_txt=cert_txt.decode('utf-8'))   
+        return render_template( '/ssl-getcert.html', env=env, cert_txt=cert_txt.decode('utf-8'), segment=segment)   
 
-    return render_template( '/ssl-getcert.html', env=env)
+    return render_template( '/ssl-getcert.html', env=env, segment=segment)
 
 
 @blueprint.route('/pkix-encrypt_privatekey.html', methods=['GET', 'POST'])
@@ -702,6 +707,7 @@ def pkix_enrypt_privatekey():
     is_encrypted=False
     filename = None
     key_pem = None
+    segment="pkix-encrypt_privatekey.html"
 
     if request.method == 'POST':
 
@@ -710,9 +716,6 @@ def pkix_enrypt_privatekey():
 
         if action == "generate_rsa" or action == "generate_ecc":
             pass
-
-
-        ## generate_rsa/ecc
         
         if action == "download":
             data = request.form.get("key_pem", None)
@@ -742,11 +745,11 @@ def pkix_enrypt_privatekey():
 
             app.logger.info("KEY PEM: %s" % key_pem.decode('utf-8'))
         except:
-            return render_template( '/pkix-encrypt_privatekey.html', env=env, aes_alg_list=aes_alg_list, errtype="error", errmsg="fail to en/dercypt private key")
+            return render_template( '/pkix-encrypt_privatekey.html', env=env, aes_alg_list=aes_alg_list, errtype="error", errmsg="fail to en/dercypt private key", segment=segment)
 
-        return render_template( '/pkix-encrypt_privatekey.html', env=env, aes_alg_list=aes_alg_list, key_pem=key_pem.decode('utf-8'))   
+        return render_template( '/pkix-encrypt_privatekey.html', env=env, aes_alg_list=aes_alg_list, key_pem=key_pem.decode('utf-8'), segment=segment)   
 
-    return render_template( '/pkix-encrypt_privatekey.html', env=env, aes_alg_list=aes_alg_list)
+    return render_template( '/pkix-encrypt_privatekey.html', env=env, aes_alg_list=aes_alg_list, segment=segment)
 
 
 """

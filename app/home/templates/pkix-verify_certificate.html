@@ -53,8 +53,42 @@
 						<div class="card-body n-5">
 							<form method="post" action="" enctype="multipart/form-data">	
 								<div class="form-group">
+									<span class="h4">
+										Certificate issuance process:
+									</span>
+									<ol>
+										<li>Converts data (Data) containing serial number, issuer, public key, etc. into hash value.</li>
+										<li>An authorized authority signs the hash value with its own private key saying "I will prove this data".</li>
+										<li>Then, a certificate is issued by combining the signed value (Signature) + data (Data).</li>
+									</ol>
+
+									<span class="h4">
+										In the certificate verification stage
+									</span>
+									<ol>
+										<li>The web browser receives the certificate passed from the server.</li>
+										<li>The certificate has the public key of the higher authority, and the hash value is obtained by decrypting the signature.</li>
+										<li>Hash value is obtained through the hash function of data existing in the certificate.</li>
+										<li>Verification of the certificate is performed by comparing the hash values of the two.</li>
+									</ol>
+
+									<span class="h4">
+										Signing and verifying
+									</span>
+									<div class="form-group">
+								
+										<div class="container float-left col-md-12">
+											<img src="/static/assets/img/cert_sign_verify.jpeg" class="img-responsive" width="300">
+										</div>
+									</div>
+								</div>
+
+								
+								
+
+								<div class="form-group">
 									<label for="exampleFormControlFile1">PEM Certificate</label>
-									<textarea class="form-control" id="pem-data" rows="10" name="inputtext">{{inputtext}}</textarea>
+									<textarea class="form-control" id="pem-data" rows="10" name="inputtext" required>{{inputtext}}</textarea>
 								</div>
 
 								<div class="form-group">
@@ -62,28 +96,6 @@
 									<input type="file" class="form-control-file" id="exampleFormControlFile1" name="cafile">
 								</div>
 
-
-								<!--div class="form-group">
-									<details>
-										<summary>
-											CSR(Certificate Sigining Request) 데이터 검증
-										</summary>
-										<span>
-											<ul>
-												<li>CSR 헤더</li>
-												<li>&nbsp&nbsp&nbsp-----BEGIN CERTIFICATE REQUEST-----</code></li>
-												<li>&nbsp&nbsp&nbsp....</code></li>
-												<li>&nbsp&nbsp&nbsp-----END CERTIFICATE REQUEST-----</code></li>
-												<li>CSR 데아터에 포함된 서명값을 검증합니다. </li>
-												<li>서명값이 CSR에 포함된 공개키와 대응되는 개인키로 서명된 것인지 확인할 수 있습니다.</code>)</li>
-												
-											</ul>
-										</span>
-
-									</details>
-								</div-->
-
-								
 								<div class="form-group">
 									<label for="exampleFormControlFile1">Verification Options</label>
 										<div class="form-check">
@@ -94,10 +106,12 @@
 										</div>
 									
 								</div>
+
+						
 							
 
 								<div class="form-group">
-										<button class="btn btn-primary" type="submit" name="action" value="verify"><span class="btn-label"><i class="fa fa-check"></i></span>
+										<button class="btn btn-primary btn-round" type="submit" name="action" value="verify"><span class="btn-label"><i class="fa fa-check"></i></span>
 											Verify
 										</button>
 								</div>
