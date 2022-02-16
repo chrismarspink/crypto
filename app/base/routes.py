@@ -255,7 +255,7 @@ def get_elliptic_curve_list():
 
 @blueprint.route('/generator-ecc_test_key.html', methods=['GET', 'POST'])
 def generator_ecc_test_key():
-
+    segment="generator-ecc_test_key.html"
     curves = get_elliptic_curve_list()
 
     ec_test_key = {}
@@ -269,18 +269,19 @@ def generator_ecc_test_key():
                 key_pem = run_cmd(cmd)
                 ec_test_key[name] = key_pem.decode()
         
-            return render_template( '/generator-ecc_test_key.html', env=env, ec_test_key=ec_test_key, ecc_curves=curves)
+            return render_template( '/generator-ecc_test_key.html', env=env, ec_test_key=ec_test_key, ecc_curves=curves, segment=segment)
         elif action == "generate_one":
             #name = request.form.get("keylen")
             cmd = "openssl ecparam -genkey -name %s" % keylen
             key_pem = run_cmd(cmd)
             ec_key = key_pem.decode()
-            return render_template( '/generator-ecc_test_key.html', env=env, name=keylen, ec_key=ec_key, ecc_curves=curves)
+            return render_template( '/generator-ecc_test_key.html', env=env, name=keylen, ec_key=ec_key, ecc_curves=curves, segment=segment)
 
-    return render_template( '/generator-ecc_test_key.html', env=env, ec_test_key=None, ecc_curves=curves)
+    return render_template( '/generator-ecc_test_key.html', env=env, ec_test_key=None, ecc_curves=curves, segment=segment)
 
 @blueprint.route('/generator-privatekey.html', methods=['GET', 'POST'])
 def generator_privatekey():
+    segment="generator-privatekey.html"
     if request.method == 'POST':
         try:
             action = request.form.get('action')
@@ -323,7 +324,7 @@ def generator_privatekey():
                     prikey_pem=prikey_pem, 
                     pubkey_pem=pubkey_pem, 
                     rsa_param=rsabits, 
-                    aes_alg_list=aes_alg_list)
+                    aes_alg_list=aes_alg_list, segment=segment)
         
             elif action == "download_prikey":
                 prikey_pem = request.form.get("prikey_pem")
@@ -348,13 +349,14 @@ def generator_privatekey():
         except:
             return render_template( '/generator-privatekey.html', env=env, 
                 errtype="error", errmsg="FAIL TO GENERATE PRIVATE KEY",
-                rsa_param=rsabits, aes_alg_list=aes_alg_list)
+                rsa_param=rsabits, aes_alg_list=aes_alg_list, segment=segment)
 
-    return render_template( '/generator-privatekey.html', env=env, rsa_param=rsabits, aes_alg_list=aes_alg_list)
+    return render_template( '/generator-privatekey.html', env=env, rsa_param=rsabits, aes_alg_list=aes_alg_list, segment=segment)
 
 @blueprint.route('/generator-ecc_privatekey.html', methods=['GET', 'POST'])
 def generator_ecc_privatekey():
 
+    segment="generator-ecc_privatekey.html"
     pubkey_pem = None
     curves = get_elliptic_curve_list()
 
@@ -366,16 +368,12 @@ def generator_ecc_privatekey():
         
             app.logger.info("action: %s, key length: %s" % (action, keylen))
 
-            #key = crypto.PKey()
-            #key.generate_key(crypto.TYPE_RSA, int(keylen))
-            #priv_key = crypto.dump_privatekey(crypto.FILETYPE_PEM, key)
             cmd = "openssl ecparam -genkey -name %s" % (keylen)
             pemstr = run_cmd(cmd)
             prikey_pem=pemstr.decode('utf-8')
 
             app.logger.info("cmd: %s" % cmd)
             app.logger.info("generated private key: %s" % pemstr)
-            #pubkey_pem = pubkey_pem.decode('utf-8')
 
             pubkey_bytes = do_openssl(prikey_pem.encode(), b"pkey", b"-text_pub")
             pubkey_pem = pubkey_bytes.decode()
@@ -387,10 +385,9 @@ def generator_ecc_privatekey():
                 enc_alg = request.form.get("enc_alg", None)
                 app.logger.info("inpass:%s, alg:%s" % (inpass, enc_alg))
                 if not inpass:
-
                     return render_template( '/generator-ecc_privatekey.html', 
-                        env=env, ecc_curves=curves, aes_alg_list=aes_alg_list, errtype="inpass", errmsg="암호화에 사용될 패스워드를 입력하세요.")
-                encrypted_str = do_openssl(pubkey_bytes, "pkey", "-passin", "pass:%s" % inpass, "-%s" % enc_alg)
+                        env=env, ecc_curves=curves, aes_alg_list=aes_alg_list, errtype="inpass", errmsg="no input password for key encryption.", segment=segment)
+                encrypted_str = do_openssl(pubkey_bytes, "ec", "-passout", "pass:%s" % inpass, "-%s" % enc_alg)
                 prikey_pem = encrypted_str.decode('utf-8')
 
             else:
@@ -403,7 +400,8 @@ def generator_ecc_privatekey():
                 pubkey_pem=pubkey_pem, 
                 ecc_curves=curves, 
                 aes_alg_list=aes_alg_list,
-                keylen=keylen)
+                keylen=keylen, 
+                segment=segment)
     
         elif action == "download_prikey":
             prikey_pem = request.form.get("prikey_pem")
@@ -417,7 +415,7 @@ def generator_ecc_privatekey():
             #if os.path.isfile(outfile):
             #    return send_file(outfile, as_attachment=True)
 
-            return render_template( '/generator-ecc_privatekey.html', env=env, ecc_curves=curves, rsa_param=rsabits, aes_alg_list=aes_alg_list)
+            return render_template( '/generator-ecc_privatekey.html', env=env, ecc_curves=curves, rsa_param=rsabits, aes_alg_list=aes_alg_list, segment=segment)
 
         elif action == "download_pubkey":
             pubkey_pem = request.form.get("pubkey_pem")
@@ -429,7 +427,7 @@ def generator_ecc_privatekey():
             return Response(generator,
                 mimetype="text/plain", headers={"Content-Disposition":"attachment;filename=%s" % filename})
 
-    return render_template( '/generator-ecc_privatekey.html', env=env, ecc_curves=curves, aes_alg_list=aes_alg_list)
+    return render_template( '/generator-ecc_privatekey.html', env=env, ecc_curves=curves, aes_alg_list=aes_alg_list, segment=segment)
 
 
 
