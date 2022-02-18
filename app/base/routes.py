@@ -78,7 +78,7 @@ from kubernetes.client import api_client
 
 Version="0.1"
 Version_Date="2022-01-10"
-App_Name="PKI.STUDIO"
+App_Name="CRYPTOENCODE"
 
 # WARNING: Don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
@@ -2035,6 +2035,10 @@ def generator_base64():
                 #pemstr = DECODE_FUNC[alg](inputtext)
                 result = pemstr.decode('utf-8')
                 app.logger.info("result ==> " + result)
+
+            elif action == "clear":
+                inputtext=""
+                render_template( '/generator-base64.html', result="", inputtext=inputtext, segment=segment)
             else:
                 flash("error: invalid command!")
                 result ="error"
@@ -2062,13 +2066,12 @@ def generator_digest():
         dgst_alg = request.form.get("dgst_alg", None)
         action = request.form.get("action")
         hmac_checked = request.form.get("hmac_checked")
-        
 
         if not dgst_alg:
             dgst_alg = "sha256"
         
-        app.logger.info("action ==> " + action)
-        app.logger.info("dgst_alt ==> " + dgst_alg)
+        #app.logger.info("action ==> " + action)
+        #app.logger.info("dgst_alt ==> " + dgst_alg)
 
         try:
             if action == "encode":
@@ -2088,10 +2091,10 @@ def generator_digest():
 
                 result = pemstr.decode('utf-8')
                 app.logger.info("result ==> " + result)
-            elif action == "decode":
-                
-                #print('command: ', cmd,  file=sys.stderr)
-                result = "not yet"
+            elif action == "clear":
+                inputtext=""
+                result=""
+                return render_template( '/generator-digest.html', inputtext=inputtext, result=result, segment=segment)
             else:
                 flash("error: invalid command!")
                 result ="error"
@@ -2099,12 +2102,12 @@ def generator_digest():
             if result.startswith('(stdin)='):
                 result = result.split('=')[1]
             
-            return render_template( '/generator-digest.html', result=result, segment=segment)
+            return render_template( '/generator-digest.html', result=result, segment=segment, inputtext=inputtext)
         except:
             ##error
             result = "error"
             
-            return render_template( '/generator-digest.html', errtype="error", errmsg="FAIL TO GENERATE DIGEST OR HMAC", segment=segment)
+            return render_template( '/generator-digest.html', errtype="error", errmsg="FAIL TO GENERATE DIGEST OR HMAC", segment=segment, inputtext=inputtext)
         
     return render_template( '/generator-digest.html', segment=segment)
 

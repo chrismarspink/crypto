@@ -28,7 +28,7 @@
 						<i class="flaticon-right-arrow"></i>
 					</li>
 					<li class="nav-item">
-						<a href="#">Key/Certificate Generate</a>
+						<a href="#">CSR Generator</a>
 					</li>
 				</ul>
 			</div>
@@ -54,19 +54,6 @@
 
 								<div class="form-group">
 
-									<!--div class="col-sm-12 col-lg-6">
-										<div class="card p-3">
-											<div class="d-flex align-items-center">
-												<span class="stamp stamp-md bg-secondary mr-3">
-													<i class="fas fa-key"></i>
-												</span>
-												<div>
-													<h5 class="mb-1"><b><a href="#">Private Key <small>File</small></a></b></h5>
-													<input type="file" name="inputfile" class="form-control-file" id="prikeyfile">
-												</div>
-											</div>
-										</div>
-									</div-->
 									<div class="form-gropup">
 										<span class="h4">CSR(Cerficate Signing Request)</span>
 										<ul>
@@ -135,21 +122,21 @@
 									<div class="form-group">
 										<details>
 											<summary>
-												인증서 DN 설정 방법
+												How to set the certificate DN
 											</summary>
 											<span>
 												<div class="form-group">
 													<ul>
-														<li>사례) "/C=KR/O=pki studio/CN=User Name/emailAddress=user@mail.addr/L=local/OU=userOrgUnut/..."</li>
-														<li>DN 필드</li>
+														<li>Sample) "/C=KR/O=pki studio/CN=User Name/emailAddress=user@mail.addr/L=local/OU=userOrgUnut/..."</li>
+														<li>DN Field</li>
 														<ul>
-															<li>C: 국가명(Country)</li>
-															<li>ST: 주(State)</li>
-															<li>L: 지역(Locality)</li>
-															<li>O: 조직(Organization)</li>
-															<li>OU: 부서(Organization Unit))</li>
-															<li>CN: 사용자 이름(Common Name)</li>
-															<li>emailAddress: 이메일 주소(Email)</li>
+															<li>C: Country</li>
+															<li>ST: State</li>
+															<li>L: Locality</li>
+															<li>O: Organization</li>
+															<li>OU: Organization Unit</li>
+															<li>CN: Common Name</li>
+															<li>emailAddress: Email Address</li>
 														</u>
 													</ul>
 												</div>
@@ -171,13 +158,13 @@
 									<div class="form-group">
 										<details>
 											<summary>
-												인증서 확장 필드(SubjectAltName) 설정
+												How to set SubjectAltName field
 											</summary>
 											<span>
 												<div class="form-group">
 													<ul>
-														<li>인증서 확정 필드 중 Subject Alt Name 필드를 추가합니다.</li>
-														<li>기본 DN외에, DNS, IP와 같은 대체명(Alternative Name)을 추가로 포함시킬 수 있습니다.</li>
+														<li>It can add 'Subject Alt Name' field</li>
+														<li>In addition to the base DN, alternative names such as DNS and IP can be additionally included.</li>
 													</ul>
 												</div>
 											</span>
@@ -321,7 +308,7 @@
 													<li>SAN 3: DNS Name=example.net</li>
 													<li>SAN 4: DNS Name=mail.example.com</li>
 													<li>SAN 5: DNS Name=support.example.com</li>
-													<li>SAN 6: DNS Name=example2.com/<li>
+													<li>SAN 6: DNS Name=example2.com</li>
 													<li>SAN 7: IP Address=93.184.216.34</li>
 													<li>SAN 8: IP Address= 2606:2800:220:1:248:1893:25c8:1946</li>
 												</ul>

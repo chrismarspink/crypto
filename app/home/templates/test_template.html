@@ -22,25 +22,24 @@
 						<i class="flaticon-right-arrow"></i>
 					</li>
 					<li class="nav-item">
-						<a href="#">Analyzers</a>
+						<a href="#">Analyzer</a>
 					</li>
 					<li class="separator">
 						<i class="flaticon-right-arrow"></i>
 					</li>
 					<li class="nav-item">
-						<a href="#">PEM</a>
+						<a href="#">PEM Analyze</a>
 					</li>
 				</ul>
 				
 			</div>
 
-			{% if errtype and errmsg %}
+			{% for message in get_flashed_messages() %}
  			<div class="alert alert-warning">
  				<button type="button" class="close" data-dismiss="alert">&times;</button>
- 					{{ errmsg }}
+ 					{{ message }}
  			</div>
- 			{% endif %}
-
+ 			{% endfor %}
 
 
 
@@ -48,8 +47,7 @@
 				<div class="col-md-12">
 					<div class="card">
 						<div class="card-header">
-							<h4 class="card-title">ENTER PEM FORMAT DATA</h4>
-							
+							<h4 class="card-title">Decode PRM/DER/ASN.1 Data</h4>
 						</div>
 
 						<div class="card-body n-5">
@@ -57,18 +55,54 @@
 							
 								
 								<div class="form-group">
-									<ul>
-									<li>Analyze PEM format data and output detailed information.</li>
-									<li>PEM (Privacy Enhanced Mail) is a base64 encoded text format file.</li>
-									<li>Binary format files can be damaged when transferring, so they are converted to TEXT, and the source file can be any binary, but mainly a certificate or a private key.</li>
-									<li>When AWS creates an EC2 Instance, the private key generated for access is also in PEM format.</li>
-									<li>To distinguish which binary file is converted to PEM, 5 dash(-) is put at the beginning of the file, BEGIN file type((PEM Message header) is put, and 5 dash(-) is followed by END file type syntax.</li>
-									<li>PEM Message header</li>
+									<ul class="nav nav-pills nav-secondary" id="pills-tab" role="tablist">
+										<li class="nav-item">
+											<a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#in-text" role="tab" aria-controls="pills-home" aria-selected="false">Text</a>
+										</li>
+										<li class="nav-item">
+											<a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#in-file" role="tab" aria-controls="pills-profile" aria-selected="true">File</a>
+										</li>
+										
 									</ul>
-									
+
+									<div class="tab-content" id="pills-tabContent">
+										<div class="tab-pane fade show active" id="in-text" role="tabpanel" aria-labelledby="pills-home-tab">
+											<textarea class="form-control" id="pem-data" rows="10" name="inputtext" style="{{env.textarea_style}}" required>{{inputtext}}</textarea>
+										</div>
+
+										<div class="tab-pane fade" id="in-file" role="tabpanel" aria-labelledby="pills-profile-tab" name="infile-tab">
+											
+											<div class="form-group">
+												<label for="exampleFormControlFile1">Input File</label>
+												<input type="file" class="form-control-file" id="exampleFormControlFile1" name="inputfile">
+											</div>
+
+											<div class="form-group">
+												<label for="defaultSelect">Select File Format</label>
+												<select class="form-control form-control" id="pem_selected" name="informat">
+													<option value="crl">CRL(Certificate Revocation List)</option>
+													<option value="crt">CRT(X.509 Certificate)</option>
+													<option value="csr">CSR(Certificate Signing Request)</option>
+													<!--option value="newcsr">New CSR</option-->
+													<option value="csr">New CSR</option>
+													<option value="rsaprikey">RSA Private Key</option>
+													<option value="pkcs7">PKCS7</option>
+													<option value="ecpripkey">Elliptic Curve Private Key</option>
+													<option value="rsapubkey">RSA Public Key</option>
+													<option value="enc_rsaprikey">Encrypted Private Key</option>
+													<option value="cms">CMS</option>
+												</select>
+
+											</div>
+											
+										</div>
+									</div>
+								</div>	
+
+								<div class="form-group">
 									<details>
 										<summary>
-											PEM(Privacy Enhanced Mail) Message Format
+											PEM(Privacy Enhanced Mail) 데이터
 										</summary>
 										<span>
 											<ul>
@@ -85,8 +119,7 @@
 										</span>
 
 									</details>
-									<textarea class="form-control" id="pem-data" rows="10" name="inputtext" style="{{env.textarea_style}}" required>{{inputtext}}</textarea>
-								</div>	
+								</div>
 
 
 								{% if errtype == 'inpass' %}
@@ -109,11 +142,11 @@
 								<div class="form-group">
 									<p class="demo">
 											
-										<button class="btn btn-primary btn-round  btn-border" type="submit" name="action" value="analyze"><span class="btn-label"><i class="fa fa-check"></i></span>
+										<button class="btn btn-primary" type="submit" name="action" value="analyze"><span class="btn-label"><i class="fa fa-check"></i></span>
 											Analyze
 										</button>
 
-		    							<button class="btn btn-warning  btn-round  btn-border" type="submit" name="action" value="clear"><span class="btn-label"><i class="fas fa-circle-notch"></i></span>
+		    							<button class="btn btn-warning" type="submit" name="action" value="clear"><span class="btn-label"><i class="fas fa-circle-notch"></i></span>
 											Clear
 										</button>
 		
@@ -135,6 +168,9 @@
 						</div>
 						<div class="card-body">
 								<div class="form-group">
+									{% if errtype == 'error' %}
+										<p class="text-danger">{{ errmsg }}</p>
+									{% endif %}
 									<pre>{{result}}</pre>
 							    </div>
 						</div>
