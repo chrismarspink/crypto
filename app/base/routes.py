@@ -421,13 +421,15 @@ def generator_ecc_privatekey():
             pubkey_pem = request.form.get("pubkey_pem")
             app.logger.info("publice key(pem): %s", pubkey_pem)
             
-            filename="ecc_%s_prublickey.pem" % request.form.get("ecparam").strip()
+            #filename="ecc_%s_prublickey.pem" % request.form.get("ecparam").strip()
+            filename="publickey.pem"
 
             generator = (cell for row in pubkey_pem for cell in row)
             return Response(generator,
                 mimetype="text/plain", headers={"Content-Disposition":"attachment;filename=%s" % filename})
 
     return render_template( '/generator-ecc_privatekey.html', env=env, ecc_curves=curves, aes_alg_list=aes_alg_list, segment=segment)
+
 
 
 
@@ -1649,7 +1651,17 @@ def cipher_encrypt():
             elif cipher == "dec":
                 outfile = os.path.join(app_config.DOWNLOAD_DIR, f.filename + "." + "org")
                 ##extension is encryption alg name
+                root = os.path.splitext(f.filename)[0]
+                app.logger.error("root fs " + root)
                 extension = os.path.splitext(f.filename)[1][1:]
+
+                if extension in aes_alg_list:
+                    app.logger.error("%s is valid extension" % extension)
+                    outfile = os.path.join(app_config.DOWNLOAD_DIR, root + "." + "org")
+                    app.logger.error("out>> %s" % outfile)
+                else:
+                    return render_template( '/cipher-encrypt.html', errortype="error", errmsg="FAIL TO ENC/DEC FILE, INVALID FILE EXTENSION", segment=segment)
+                 
 
                 cmd = 'openssl enc -d  -in \"%s\" -out \"%s\" -pass pass:1234 -%s' % (infile, outfile, extension)
                 app.logger.info('decrypt: %s' % cmd)
@@ -1735,7 +1747,7 @@ def cipher_pubkey_encrypt():
 
         app.logger.info("message file: " + infile)
         app.logger.info("key     file: " + keyfile)
-        app.logger.info("key format  : " + inform)
+        ##app.logger.info("key format  : " + inform)
         app.logger.info("action      : " + action)
 
         if action == "enc":
@@ -1760,15 +1772,15 @@ def cipher_pubkey_encrypt():
         try:
             run_cmd(cmd)
         except:
-            errtype, errmsg = "ERROR", "ERROR: PLEASE CHECK FILE SIZE LESS THAN PUBLIC KEY SIZE"
+            errtype, errmsg = "ERROR", "FAIL TO EN/DECRYPT WITH PUBLIC KEY ALGORITHM"
             return render_template( '/cipher-pubkey_encrypt.html', errtype=errtype, errmsg=errmsg, segment=segment)
 
         if os.path.isfile(outfile):
             return send_file(outfile, as_attachment=True)
 
-        else:
-            errtype, errmsg = "ERROR", "ERROR: PLEASE CHECK FILE SIZE LESS THAN PUBLIC KEY SIZE"
-            return render_template( '/cipher-pubkey_encrypt.html', errtype=errtype, errmsg=errmsg, segment=segment)
+        #else:
+        #    errtype, errmsg = "ERROR", "ERROR: PLEASE CHECK FILE SIZE LESS THAN PUBLIC KEY SIZE"
+        #    return render_template( '/cipher-pubkey_encrypt.html', errtype=errtype, errmsg=errmsg, segment=segment)
 
         return render_template( '/cipher-pubkey_encrypt.html', segment=segment)
 
