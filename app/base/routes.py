@@ -877,11 +877,13 @@ def k8s_main():
 
 @blueprint.route('/analyzer-pkcs12.html', methods=['GET', 'POST'])
 def analyzer_pkcs12():
+    infile=None
     @after_this_request
     def remove_file(response):
         try:
-            os.remove(infile)
-            app.logger.info("Remove: %s" % infile)
+            if infile:
+                os.remove(infile)
+                app.logger.info("Remove: %s" % infile)
         except Exception as error:
             app.logger.error("Error Removing or closing downloaded file", error)
         return response
@@ -1419,13 +1421,12 @@ def analyzer_pem():
 
 @blueprint.route('/analyzer-file.html', methods=['GET', 'POST'])
 def analyzer_file():
+    infile=None
     @after_this_request
     def remove_file(response):
-        try:
+        if infile:
             os.remove(infile)
             app.logger.info("Remove: %s" % infile)
-        except Exception as error:
-            app.logger.error("Error Removing or closing downloaded file", error)
         return response
 
     app.logger.info('>>>>> Analyzer file START...')
@@ -2149,3 +2150,8 @@ def not_found_error(error):
 @blueprint.errorhandler(500)
 def internal_error(error):
     return render_template('page-500.html'), 500
+"""
+@blueprint.errorhandler(413)
+def internal_error(error):
+    return render_template('page-413.html'), 413
+"""
