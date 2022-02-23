@@ -915,14 +915,14 @@ def analyzer_pkcs12():
                 generator = (cell for row in data for cell in row)
                 return Response(generator, mimetype="text/plain", headers={"Content-Disposition":"attachment;filename=cacert.pem"})
         except: 
-            return render_template( '/analyzer-pkcs12.html', errtype="error", errmsg="FAIL TO DOWNLOAD DATA", segment=segment)
+            return render_template( '/analyzer-pkcs12.html', env=env,errtype="error", errmsg="FAIL TO DOWNLOAD DATA", segment=segment)
 
         mode = request.form.get("inpass")
 
         f = request.files.get('pkcs12file', None)
         if not f:
             app.logger.info("file not found")
-            return render_template( '/analyzer-pkcs12.html', result=result, segment=segment)
+            return render_template( '/analyzer-pkcs12.html', env=env,result=result, segment=segment)
             
         try:
             infile = os.path.join(app_config.UPLOAD_DIR, f.filename)
@@ -930,7 +930,7 @@ def analyzer_pkcs12():
             inpass = request.form.get("inpass").encode('utf-8')
             p12 = crypto.load_pkcs12(open(infile, 'rb').read(), inpass)
             if not p12:
-                return render_template( '/analyzer-pkcs12.html', errtype="error", errmsg="INVALID PKCS12 FILE", segment=segment)
+                return render_template( '/analyzer-pkcs12.html', env=env,errtype="error", errmsg="INVALID PKCS12 FILE", segment=segment)
 
             usercert = p12.get_certificate()  # (signed) certificate object
             if usercert:
@@ -947,7 +947,7 @@ def analyzer_pkcs12():
                 cacert_pem = crypto.dump_certificate(crypto.FILETYPE_PEM, cacert).decode('utf-8')
 
         except:
-            return render_template( '/analyzer-pkcs12.html', errtype="error", errmsg="FAIL TO PARSE PKCS12 FILE", segment=segment)
+            return render_template( '/analyzer-pkcs12.html', env=env,errtype="error", errmsg="FAIL TO PARSE PKCS12 FILE", segment=segment)
         
         
 
@@ -1173,61 +1173,16 @@ def analyzer_pem():
             if not dataType:
                 return render_template( '/analyzer-pem.html', env=env,  result=None, errmsg="unsupport data type", errtype="error", segment=segment) 
 
-            #app.logger.info("input format(PEM TEXT): " + dataType)
-
-        elif f:
-            infile = os.path.join(app_config.UPLOAD_DIR, f.filename)
-            f.save(infile)
-            inType = "file"
-
-            formInFormat = request.form.get("informat")
-            fileMode = "text"
-
-            app.logger.info("input format(FILE): " + infile)
-
-            if True == is_binary(infile.encode('utf-8')):
-                fileMode = "binary"
-                inForm = "DER"
-            else:
-                fileMode = "text"
-                inForm = "PEM" ## SMIME??
-
-            app.logger.info( "Filename: " + infile)
-            app.logger.info( "File Parsing: " + formInFormat + ", inType: " + inType + ", fileMode: " + fileMode + ", inForm: " + inForm)
-
-            if fileMode == "text":
-                inputtext = read_pem_file(infile)
-                
-                dataType = get_pem_type(inputtext)
-                if not dataType:
-                    dataType = formInFormat
-
-                inType = "text" ##로 변경
-                app.logger.info( "TEXT FILE MODE: format: " + dataType + ", fmode: " + fileMode + ", inType(changed): " + inType )
-            
-            elif fileMode =="binary":
-                if "data" == get_pki_file_type(infile):
-                    dataType = formInFormat
-                else:
-                    #바이너리, crt. csr 아닌 경우는 사용자 입력에 의존한다. 
-                    dataType = formInFormat
-                app.logger.info( "BINARY FILE MODE" + ", dataType: " + dataType + ", fileMode: " + fileMode)
-                app.logger.info( "BINARY FILE MODE" + ", inType: " + inType)
-
         else: 
             errtype = "error"
-            errmsg = "error: No Input Data(Text/File)"
-            flash(errmsg)
+            errmsg = "INVALID PEM DATA FORMAT"
             return render_template( '/analyzer-pem.html', env=env, result=None, errmsg=errmsg, errtype=errtype)    
 
 #Certificate
         try:
-            #if textmode and inputtext.startswith("-----BEGIN CERTIFICATE-----"):
+             #if textmode and inputtext.startswith("-----BEGIN CERTIFICATE-----"):
             if asn1mode == True:
-                if inType == "file":
-                    cmd = "openssl asn1parse -inform %s -in %s " % (inForm, infile)
-                elif inType == "text":
-                    pemstr = do_openssl(inputtext.encode('utf-8'), b"asn1parse", b"-inform", b"PEM")
+                pemstr = do_openssl(inputtext.encode('utf-8'), b"asn1parse", b"-inform", b"PEM")
 
                 result = pemstr.decode('utf-8')
                 app.logger.info("Result sring: " + result)
@@ -1240,16 +1195,13 @@ def analyzer_pem():
                 return render_template( '/analyzer-pem.html',env=env,  result=result, errmsg=errmsg, errtype=errtype, inputtext=inputtext, segment=segment)    
 
             elif dataType == "crt":
+                app.logger.info("CRT CERTIFICATE: ")
+                pemstr = do_openssl(inputtext.encode('utf-8'), b"x509", b"-text", b"-noout", b"-inform", b"PEM")
+                app.logger.info("t1:", type(inputtext))
                 
-                if inType == "file":
-                    cmd = "openssl x509 -text -noout -inform DER -in %s " % infile
-                    app.logger.info("binary command : " + cmd)
-                    pemstr = run_cmd(cmd)
-                elif inType == "text":
-                    pemstr = do_openssl(inputtext.encode('utf-8'), b"x509", b"-text", b"-noout", b"-inform", b"PEM")
-                
-                result = pemstr.decode('utf-8')
-                app.logger.info("Result sring: " + result)
+                result = pemstr.decode('ISO-8859-1')
+                #result = pemstr.encode()
+                app.logger.info("Result sring: %s" % pemstr )
                 
                 if not result.startswith("Certificate:"):
                     errtype, errmsg = "error", "error: Invalid X509 Certificate"
@@ -1258,15 +1210,9 @@ def analyzer_pem():
 
             #elif textmode and inputtext.startswith("-----BEGIN CERTIFICATE REQUEST-----"):
             elif dataType == "csr":
-                if inType == "file":
-                    cmd = "openssl req -text -noout -inform DER -in " + infile
-                    app.cmd = "openssl req -text -noout -inform DER -in " + infile
-                    app.logger.info("binary command for Certificate Signing Request: " + cmd)
-                    pemstr = run_cmd(cmd)
-                    
-                else:
-                    pemstr = do_openssl(inputtext.encode('utf-8'), b"req", b"-text", b"-noout", b"-inform", b"PEM")
-                result = pemstr.decode('utf-8')
+                pemstr = do_openssl(inputtext.encode('utf-8'), b"req", b"-text", b"-noout", b"-inform", b"PEM")
+                #result = pemstr.decode('utf-8')
+                result = pemstr.decode('ISO-8859-1')
                 
                 if not result.startswith("Certificate Request:"):
                     errmsg = "error: invalid CSR"
@@ -1275,12 +1221,7 @@ def analyzer_pem():
             ##openssl rsa -in test.pub -text -noout -pubin
             #elif inputtext.startswith("-----BEGIN PUBLIC KEY-----"):
             elif dataType == "rsapubkey":
-                if inType == "file":
-                    cmd = "openssl ras -pubin -noout -text -inform DER -in " + infile
-                    app.logger.info("binary command for RSA PUBKEY : " + cmd)
-                    pemstr = run_cmd(cmd)
-                else:
-                    pemstr = do_openssl(inputtext.encode('utf-8'), b"rsa", b"-pubin", b"-text", b"-noout", b"-inform", b"PEM")
+                pemstr = do_openssl(inputtext.encode('utf-8'), b"rsa", b"-pubin", b"-text", b"-noout", b"-inform", b"PEM")
                 result = pemstr.decode('utf-8')
                 
                 if not result.startswith("RSA Public-Key:"):
@@ -1291,13 +1232,7 @@ def analyzer_pem():
 
             #elif inputtext.startswith("-----BEGIN RSA PRIVATE KEY-----"):
             elif dataType == "rsaprikey":
-
-                if inType == "file":
-                    cmd = "openssl rsa -text -noout -inform DER -in " + infile
-                    app.logger.info("binary command for RSA Private Key : " + cmd)
-                    pemstr = run_cmd(cmd)
-                else:
-                    pemstr = do_openssl(inputtext.encode('utf-8'), b"rsa", b"-text", b"-noout", b"-inform", b"PEM")
+                pemstr = do_openssl(inputtext.encode('utf-8'), b"rsa", b"-text", b"-noout", b"-inform", b"PEM")
                 result = pemstr.decode('utf-8')
                 
                 if not result.startswith("RSA Private-Key:"):
@@ -1308,12 +1243,7 @@ def analyzer_pem():
 
             elif dataType == "ecprikey":
 
-                if inType == "file":
-                    cmd = "openssl ec -text -noout -inform DER -in " + infile
-                    app.logger.info("binary command for RSA Private Key : " + cmd)
-                    pemstr = run_cmd(cmd)
-                else:
-                    pemstr = do_openssl(inputtext.encode('utf-8'), b"ec", b"-text", b"-noout", b"-inform", b"PEM")
+                pemstr = do_openssl(inputtext.encode('utf-8'), b"ec", b"-text", b"-noout", b"-inform", b"PEM")
                 
                 result = pemstr.decode()
                 app.logger.info("result : " + result)
@@ -1335,12 +1265,7 @@ def analyzer_pem():
                 else:
                     passin_arg = "pass:" + inpass
 
-                if inType == "file":
-                    cmd = "openssl rsa -text -noout -inform DER -in " + infile + "  -passin " + passin_arg
-                    app.logger.info("binary command for Encrypted RSA Private Key : " + cmd)
-                    pemstr = run_cmd(cmd)
-                else: 
-                    pemstr = do_openssl(inputtext.encode('utf-8'), b"rsa", b"-text", b"-noout", b"-inform", b"PEM", b"-passin", passin_arg)
+                pemstr = do_openssl(inputtext.encode('utf-8'), b"rsa", b"-text", b"-noout", b"-inform", b"PEM", b"-passin", passin_arg)
 
                 result = pemstr.decode('utf-8')
                 
@@ -1353,13 +1278,9 @@ def analyzer_pem():
             ##ermind@rbrowser:/tmp$ openssl pkcs7 -in test.p7b -text  -print -noout
             #elif inputtext.startswith("-----BEGIN PKCS7-----"):
             elif dataType == "pkcs7":
-                if inType == "file":
-                    cmd = "openssl pkcs7 -text -noout -print -inform DER -in " + infile
-                    app.logger.info("binary file parsing, type=PKCS7 : " + cmd)
-                    pemstr = run_cmd(cmd)
-                else: 
-                    pemstr = do_openssl(inputtext.encode('utf-8'), b"pkcs7", b"-text", b"-noout", b"-inform", b"PEM", b"-print")
-                result = pemstr.decode('utf-8')
+                pemstr = do_openssl(inputtext.encode('utf-8'), b"pkcs7", b"-text", b"-noout", b"-inform", b"PEM", b"-print")
+                #result = pemstr.decode('utf-8')
+                result = pemstr.decode('ISO-8859-1')
                 
                 if not result.startswith("PKCS7:"):
                     errtype = "error"
@@ -1394,7 +1315,8 @@ def analyzer_pem():
                 else:
                     pemstr = do_openssl(inputtext.encode('utf-8'), b"cms", b"-cmsout", b"-print", b"-noout", b"-inform", b"PEM")
 
-                result = pemstr.decode('utf-8')
+                #result = pemstr.decode('utf-8')
+                result = pemstr.decode('ISO-8859-1')
                 app.logger.info(result)
                 
                 if not result.startswith("CMS_ContentInfo:"):
@@ -1407,6 +1329,7 @@ def analyzer_pem():
                 flash("error: no input data")
                 return render_template( '/analyzer-pem.html', env=env, result=None, errmsg=errmsg, errtype=errtype, inputtext=inputtext, segment=segment)    
         except:
+
             flash("Exception: Invalid data or type...")
             errtype = "error"
             errmsg = "error: Fail to parse data, Please check Data/File valid or file type"
