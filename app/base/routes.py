@@ -738,12 +738,15 @@ def pkix_enrypt_privatekey():
             if action == "enc":
                 app.logger.info("encrypt >>>")
                 key_pem = do_openssl(inputtext.encode('utf-8'), b'pkey', "-%s" % cipher, b'-passout',  "pass:%s" % outpass)
-            elif action == "dec":
+                if not key_pem.startswth("-----BEGIN"):
+                    return render_template( '/pkix-encrypt_privatekey.html', env=env, aes_alg_list=aes_alg_list, errtype="error", errmsg="fail to en/dercypt private key", segment=segment)
+            """elif action == "dec":
                 app.logger.info("decrypt >>>")
                 key_pem = do_openssl(inputtext.encode('utf-8'), b'pkey', b'-passin', "pass:%s" % inpass)
             elif action == "reenc":
                 app.logger.info("decrypt & encrypt >>>")
                 key_pem = do_openssl(inputtext.encode('utf-8'), b'pkey',  "-%s" % cipher, b'-passin',  "pass:%s" % inpass, b'-passout', "pass:%s" % outpass)
+            """
 
             app.logger.info("KEY PEM: %s" % key_pem.decode('utf-8'))
         except:
@@ -1649,7 +1652,7 @@ def cipher_encrypt():
                 app.logger.info('command: ', cmd)
 
             elif cipher == "dec":
-                outfile = os.path.join(app_config.DOWNLOAD_DIR, f.filename + "." + "org")
+                #outfile = os.path.join(app_config.DOWNLOAD_DIR, f.filename + "." + "org")
                 ##extension is encryption alg name
                 root = os.path.splitext(f.filename)[0]
                 app.logger.error("root fs " + root)
@@ -1657,7 +1660,7 @@ def cipher_encrypt():
 
                 if extension in aes_alg_list:
                     app.logger.error("%s is valid extension" % extension)
-                    outfile = os.path.join(app_config.DOWNLOAD_DIR, root + "." + "org")
+                    outfile = os.path.join(app_config.DOWNLOAD_DIR, root)
                     app.logger.error("out>> %s" % outfile)
                 else:
                     return render_template( '/cipher-encrypt.html', errortype="error", errmsg="FAIL TO ENC/DEC FILE, INVALID FILE EXTENSION", segment=segment)
@@ -1961,7 +1964,7 @@ def sign_pubkey():
         app.logger.info("key     file: " + keyfile)
 
         dgstfile = infile +".dgst"
-        cmd = 'openssl dgst -binary -sha256 %s > %s' % (infile, dgstfile)
+        cmd = 'openssl dgst -binary -sha256 \"%s\" > \"%s\"' % (infile, dgstfile)
         run_cmd(cmd)
 
         if not os.path.isfile(dgstfile):
@@ -1987,7 +1990,7 @@ def sign_pubkey():
             sigfile = os.path.join(app_config.UPLOAD_DIR, fs.filename)
             fs.save(sigfile)
             app.logger.info("signature file: " + sigfile)
-            cmd = 'openssl pkeyutl -verify -in \"%s\" -certin -inkey \"%s\" -keyform %s -sigfile %s'  % (dgstfile, keyfile, inform, sigfile)
+            cmd = 'openssl pkeyutl -verify -in \"%s\" -certin -inkey \"%s\" -keyform %s -sigfile \"%s\"'  % (dgstfile, keyfile, inform, sigfile)
             app.logger.info('verify.command: %s' % cmd)
             
         else:

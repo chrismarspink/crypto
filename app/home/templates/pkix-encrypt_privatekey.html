@@ -66,19 +66,8 @@
 									<label for="password">PEM Private Key</label>
 									<textarea class="form-control" id="pem-data" rows="10" name="inputtext" required>{{inputtext}}</textarea>
 									
-									<!--details>
-										<summary>
-											Generate Sample Key
-										</summary>
-										<span>
-											<button class="btn btn-secondary btn-xs" type='submit' name="action" value='generate_rsa'><span class="btn-label"><i class="fa fa-check"></i></span>Download</button>
-											<button class="btn btn-secondary btn-xs" type='submit' name="action" value='generate_ecc'><span class="btn-label"><i class="fa fa-check"></i></span>Download</button>
-										</span>
-
-									</details-->
-									
 								</div>
-									
+
 								{% if errtype == 'inpass' %}
 								<div class="form-group has-error ">
 								{% else %}	
@@ -87,37 +76,37 @@
 									<label for="password">Input password to derypt PEM private key</label>
 									<input type="password" class="form-control" name="inpass" id="inpass" placeholder="password for private key decryption", >
 								</div>
-
+{#
 								{% if errtype == 'outpass' %}
 								<div class="form-group has-error ">
 								{% else %}	
 								<div class="form-group">
 								{% endif %}	
-								<label for="password">Output password for encrypt private key</label>
-								<div class="input-group">
-									<input type="password" class="form-control" name="outpass" id="outpass" aria-label="Text input with dropdown button" placeholder="password for private re/encryption">
-									<div class="input-group-append">
-										<button class="btn btn-default btn-border" type="button" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false">Ciphers</button>
-										<select class="form-control form-control" id="pem_selected" name="cipher">
-											{% for element in aes_alg_list %}
-											<option value="{{element}}">{{ element }} </option>
-											{% endfor %}
-										</select>
+									<label for="password">Output password for encrypt private key</label>
+									<div class="input-group">
+										<input type="password" class="form-control" name="outpass" id="outpass" aria-label="Text input with dropdown button" placeholder="password for private re/encryption">
+										<div class="input-group-append">
+											<button class="btn btn-default btn-border" type="button" data-toggle="dropdown" aria-haspopup="false" aria-expanded="false">Ciphers</button>
+											<select class="form-control form-control" id="pem_selected" name="cipher">
+												{% for element in aes_alg_list %}
+												<option value="{{element}}">{{ element }} </option>
+												{% endfor %}
+											</select>
+										</div>
 									</div>
 								</div>
-							</div>
-
+#}
 								
 							<div class="form-group">
 								<button class="btn btn-primary btn-round" type="submit" name="action" value="enc"><span class="btn-label"><i class="fa fa-check"></i></span>
 									Encrypt
 								</button>
-	    						<button class="btn btn-warning  btn-round" type="submit" name="action" value="dec"><span class="btn-label"><i class="fas fa-circle-notch"></i></span>
+	    						<!--button class="btn btn-warning  btn-round" type="submit" name="action" value="dec"><span class="btn-label"><i class="fas fa-circle-notch"></i></span>
 									Decrypt
-								</button>
-								<button class="btn btn-secondary  btn-round" type="submit" name="action" value="reenc"><span class="btn-label"><i class="fas fa-circle-notch"></i></span>
+								</button-->
+								<!--button class="btn btn-secondary  btn-round" type="submit" name="action" value="reenc"><span class="btn-label"><i class="fas fa-circle-notch"></i></span>
 									Re-encrypt
-								</button>
+								</button-->
 							</div>
 						</div>
 					</div> <!--card-->
