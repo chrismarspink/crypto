@@ -253,6 +253,15 @@ def get_elliptic_curve_list():
     return curves
 
 
+@blueprint.route('/request-csr.html', methods=['GET', 'POST'])
+def certification_request():
+    segment="request-%s.html" % "csr"
+    app.logger.info("request function, segment=<%s>" % segment)
+
+    return render_template( '/request-csr.html', segment=segment)
+
+
+
 @blueprint.route('/generator-ecc_test_key.html', methods=['GET', 'POST'])
 def generator_ecc_test_key():
     segment="generator-ecc_test_key.html"
