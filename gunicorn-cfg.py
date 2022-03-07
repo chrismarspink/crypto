@@ -9,5 +9,5 @@ accesslog = '-'
 loglevel = 'debug'
 capture_output = True
 enable_stdio_inheritance = True
-#certfile='./ssl.pem'
-#keyfile='./ssl.pem'
+certfile='./server.crt'
+keyfile='./server.key'
