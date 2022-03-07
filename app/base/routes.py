@@ -883,6 +883,9 @@ def k8s_main():
     
     return render_template( '/k8s-main.html', kConfigList=kConfigList, kNodeList=kNodeList, kDynamicNode=DynamicNode, result=result, kubeConfList=kubeConfList)
 """
+@blueprint.route('/privacy_policy.html', methods=['GET', 'POST'])
+def privacy_policy():
+    return render_template("/privacy_policy.html")
 
 @blueprint.route('/analyzer-pkcs12.html', methods=['GET', 'POST'])
 def analyzer_pkcs12():
