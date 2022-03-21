@@ -24,6 +24,7 @@ import sys
 import mimetypes
 import tempfile
 
+from flask import send_from_directory
 
 ########## Crypto Module
 from OpenSSL import crypto, SSL
@@ -163,6 +164,10 @@ def run_cmd(cmd, input=None):
 def route_default():
     return redirect(url_for('base_blueprint.login'))
 """
+
+@blueprint.route('/robots.txt')
+def robots_to_root():
+    return send_from_directory(app.static_folder, request.path[1:])
 
 @blueprint.route('/')
 def route_default():
