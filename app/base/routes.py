@@ -13,6 +13,10 @@ from flask_login import (
 )
 from flask import flash
 
+from os import listdir
+from os.path import isfile, join
+
+
 from app import db, login_manager
 from app.base import blueprint
 from app.base.forms import LoginForm, CreateAccountForm
@@ -2067,6 +2071,293 @@ def generator_digest():
         
     return render_template( '/generator-digest.html', segment=segment)
 
+
+
+@blueprint.route('/rest-api.html', methods=['GET', 'POST'])
+def rest_api():
+    segment="rest-api.html"
+    app.logger.info("Rest API Test >>>>> ")
+    ca_name = "iot_smarthome"
+    server="https://www.cryptoencode.net:20002"
+
+            
+    if request.method == 'POST':
+        
+        action = request.form.get('action', None)
+        if not action:
+            render_template( '/rest-api.html', result=None, message="error: no action", segment=segment)
+
+                
+        app.logger.info("action - [%s]" % action)
+        
+        result = None
+
+        """sign=$server/sign
+        xsign=$server/xsign
+        revoke=$server/revoke
+        gencrl=$server/gencrl
+        crl=$server/crl
+        ticket=$server/ticket
+        clientadd=$server/clientadd
+        test=$server/test
+        
+
+        ca_name=iot_smarthome
+
+        clientid=jkkim@ermind.co.kr"""
+
+        client_sign_alg="secp256k1" #secp112r1
+        client_sign_key="/home/sign.key"
+        client_sign_pub="/home/sign.pub"
+
+        username = request.form.get("username", "demo")
+        clientid = request.form.get("clientiid", "demo@email.com")
+
+        client_sign_key="./%s_sign.key" % username
+        client_sign_pub="./%s_sign.pub" % username
+        
+
+        mydate_cmd="date \"+%Y%M%d%H%m.%S\""
+        mydate = run_cmd(mydate_cmd)
+        mydate = mydate.decode('utf-8')
+        mydate = mydate.strip('\n')
+        mydate = mydate.strip('\t')
+
+        print("mydata: %s" % mydate)
+
+        try:
+            if action == "ticket":
+                command2 = "curl -fk -o ./%s.ticket  \"%s/ticket/%s\"" % (ca_name, server, ca_name) 
+                print("command2: %s" % command2)
+                result = run_cmd(command2)
+
+                command = "cat ./%s.ticket" % (ca_name)
+                print("command: %s" % command)
+                
+                result = run_cmd(command)
+                result = result.decode('utf-8')
+                print("result2: %s" % result)
+                
+                
+                return  render_template( '/rest-api.html', result=result, segment=segment)
+                
+            elif action == "genkey":
+                
+                #cmd1 = "openssl ecparam -genkey -name %s -noout -out \"%s_sign.key\"" % (client_sign_alg,  username)
+                #cmd2 = "openssl ec -in \"%s\"_sign.key -pubout -out \"%s\"_sign.pub" % (username, username)
+                cmd1 = "openssl ecparam -genkey -name %s -noout -out \"%s\"" % (client_sign_alg,  client_sign_key)
+                cmd2 = "openssl ec -in \"%s\"_sign.key -pubout -out \"%s\"" % (username, client_sign_pub)
+
+                result1 = run_cmd(cmd1)
+                result2 = run_cmd(cmd2)
+
+                cmd3 = "cat \"%s\"" % client_sign_key
+                cmd4 = "cat \"%s\"" % client_sign_pub
+
+                result3 = run_cmd(cmd3)
+                result4 = run_cmd(cmd4)
+
+                result = "user name: %s\nalgorithm: %s\nkey: %s\npublic key(extracted from private key: %s\n"  %  (username, client_sign_alg, result3.decode('utf-8'), result4.decode('utf-8'))
+
+                return render_template( '/rest-api.html', result=result, segment=segment)
+
+            elif action == "register":
+
+                
+                print("register")
+                print("register id: %s" % clientid)
+                cmd_token="openssl dgst -sha1 -sign %s ./%s.ticket | openssl base64 -A" % (client_sign_key, ca_name)
+                print("token cmd: %s" % cmd_token)
+                token = run_cmd(cmd_token)
+
+                token.decode('utf-8')
+                
+                print("token: [%s]" % token)
+
+                pub = run_cmd("cat %s" % client_sign_pub)
+                print("pub: [%s]" % pub)
+
+                cmd_register = "curl -fk  --data-binary @./%s \"%s/clientadd/%s?clientid=%s&token=%s\"" % (client_sign_pub, server, ca_name, clientid, token.decode('utf-8'))
+                print("register cmd: %s" % cmd_register)
+                result = run_cmd(cmd_register)
+                print("register result1 <-- %s" % result)
+                msg1 = result.decode('utf-8')
+                print("register msg1 <-- %s" % msg1)
+                print("type : %s" % type(msg1))
+
+                message="user(%s) registered successfully\ninfo:\n___token: %s\n___client id: %s\n" % (username, token.decode('utf-8'), clientid)
+
+                return render_template( '/rest-api.html', result=msg1, message=message, segment=segment)
+                
+
+            elif action == "sign":
+                print("sign")
+                print("register id: %s" % clientid)
+                #cmd_token="openssl dgst -sha1 -sign %s ./%s.ticket | openssl base64 -A" % (client_sign_key, ca_name)
+                cmd_idtoken="openssl dgst -sha1 -sign ./%s ./%s.ticket | openssl base64 -A" % (client_sign_key, ca_name)
+                print("idtoken cmd: %s" % cmd_idtoken)
+                idtoken = run_cmd(cmd_idtoken)
+
+                idtoken = idtoken.decode('utf-8')
+                
+                print("token: [%s]" % idtoken)
+                openssl_req = "openssl req -new -newkey rsa:2048 "
+                host_key = "host_%s.pem" % mydate
+                dn_str = "/C=KR/O=PKIZONE/OU=DEMO/CN=host_%s" % mydate
+                nDays = "365"
+
+                cmd = "openssl req -new  -newkey rsa:2048 -keyout host_%s.key -nodes -subj \"/\" |  curl -fk --data-binary @- -o %s \"%s/sign/%s?dn=%s&days=%s&token=%s\""   % (mydate, host_key, server, ca_name, dn_str, nDays, idtoken)
+                print("cmd: [%s]" % cmd)
+
+                tmp = run_cmd(cmd)
+                result = tmp.decode('utf-8')
+                
+                print("result: [%s]" % result)
+
+                cmd_view = "cat %s" % (host_key)
+                
+                tmp = run_cmd(cmd_view)
+                
+                cert_pem = tmp.decode('utf-8')
+
+                result = run_cmd("openssl x509 -in %s -text -noout" % host_key)
+                
+
+                return render_template( '/rest-api.html', result=result.decode('utf-8'), message=cert_pem, segment=segment)
+
+            elif action == "xsign":
+                print("xsign")
+                print("register id: %s" % clientid)
+                #cmd_token="openssl dgst -sha1 -sign %s ./%s.ticket | openssl base64 -A" % (client_sign_key, ca_name)
+                cmd_idtoken="openssl dgst -sha1 -sign ./%s ./%s.ticket | openssl base64 -A" % (client_sign_key, ca_name)
+                print("idtoken cmd: %s" % cmd_idtoken)
+                idtoken = run_cmd(cmd_idtoken)
+
+                idtoken = idtoken.decode('utf-8')
+                
+                print("token: [%s]" % idtoken)
+                
+                openssl_req = "openssl req -new -newkey rsa:2048 "
+                host_key = "host_%s.pem" % mydate
+                dn_str = "/C=KR/O=PKIZONE/OU=DEMO/CN=host_%s" % mydate
+                nDays = "365"
+
+                cmd = "curl -fk -o %s \"%s/xsign/%s?dn=%s&days=%s&keygen=ecc:secp256k1&token=%s\""   % ( host_key, server, ca_name, dn_str, nDays, idtoken)
+                print("cmd: [%s]" % cmd)
+
+                tmp = run_cmd(cmd)
+                result = tmp.decode('utf-8')
+                
+                print("result: [%s]" % result)
+
+                cmd_view = "cat %s" % (host_key)
+                
+                tmp = run_cmd(cmd_view)
+                
+                cert_pem = tmp.decode('utf-8')
+
+                result = run_cmd("openssl x509 -in %s -text -noout" % host_key)
+                
+
+                return render_template( '/rest-api.html', result=result.decode('utf-8'), message=cert_pem, segment=segment)
+
+
+            elif action == "cacert":
+                
+                cafile = "%s.pem" % ca_name
+                cmd = "curl -fk -o ./%s.pem \"%s/cacert/%s\""   % ( ca_name, server, ca_name)
+                print("cmd: [%s]" % cmd)
+
+                tmp = run_cmd(cmd)
+                result = tmp.decode('utf-8')
+                
+                print("result: [%s]" % result)
+
+                cmd_view = "cat %s" % (cafile)
+                
+                tmp = run_cmd(cmd_view)
+                
+                cert_pem = tmp.decode('utf-8')
+
+                result = run_cmd("openssl x509 -in %s -text -noout" % cafile)
+
+                return render_template( '/rest-api.html', result=result.decode('utf-8'), download_cacert=True, message=cert_pem, segment=segment)
+            
+            elif action =="download_cacert":
+                cafile = "%s.pem" % ca_name
+                cmd_view = "cat %s" % (cafile)
+                tmp = run_cmd(cmd_view)
+                cert_pem = tmp.decode('utf-8')
+
+                data = cert_pem
+                app.logger.info("download cacert")
+                generator = (cell for row in data for cell in row)
+                return Response(generator, mimetype="text/plain", headers={"Content-Disposition":"attachment;filename=cacert.pem"})
+
+
+###crl
+            elif action == "gencrl":
+                
+                crl_file = "%s.crl" % ca_name
+                cmd = "curl -fk -o ./%s \"%s/gencrl/%s\""   % ( crl_file, server, ca_name)
+                print("cmd: [%s]" % cmd)
+
+                tmp = run_cmd(cmd)
+                result = tmp.decode('utf-8')
+                
+                print("result(crl): [%s]" % result)
+
+                cmd_view = "cat %s" % (crl_file)
+                
+                tmp = run_cmd(cmd_view)
+                
+                cert_pem = tmp.decode('utf-8')
+
+                result = run_cmd("openssl crl -in %s -text -noout" % crl_file)
+
+                return render_template( '/rest-api.html', result=result.decode('utf-8'), download_crl=True, message=cert_pem, segment=segment)
+            
+            elif action =="download_crl":
+                crl_file = "%s.crl" % ca_name
+                cmd_view = "cat %s" % (crl_file)
+                tmp = run_cmd(cmd_view)
+                cert_pem = tmp.decode('utf-8')
+
+                data = cert_pem
+                app.logger.info("download crl")
+                generator = (cell for row in data for cell in row)
+                return Response(generator, mimetype="text/plain", headers={"Content-Disposition":"attachment;filename=cacert.crl"})
+
+            elif action == "database":
+                
+                db_file = "%s.db" % ca_name
+                cmd = "curl -fk -o ./%s \"%s/database/%s\""   % ( db_file, server, ca_name)
+                print("cmd: [%s]" % cmd)
+
+                tmp = run_cmd(cmd)
+                result = tmp.decode('utf-8')
+                
+                print("result(crl): [%s]" % result)
+
+                cmd_view = "cat %s" % (db_file)
+                
+                tmp = run_cmd(cmd_view)
+                
+                db_list = tmp.decode('utf-8')
+
+
+                return render_template( '/rest-api.html', result=db_list, segment=segment)
+            else:
+                flash("error: invalid command!")
+                result ="error"
+                
+            return render_template( '/rest-api.html', result=result, inputtext=None, segment=segment)
+        except Exception as error:
+            ##error
+            result = error
+            return render_template( '/rest-api.html', result=result, segment=segment)
+        
+    return render_template( '/rest-api.html', result="input text", segment=segment)
 
 @blueprint.route('/logout')
 def logout():

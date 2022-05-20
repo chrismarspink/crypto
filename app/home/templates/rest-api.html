@@ -1,0 +1,264 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} PKIZONE {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<form method="post" action="" enctype="multipart/form-data">	
+	<div class="content">
+		<div class="page-inner">
+			<div class="page-header">
+				<h4 class="page-title">PKIZONE API</h4>
+				<ul class="breadcrumbs">
+					<li class="nav-home">
+						<a href="#">
+							<i class="flaticon-home"></i>
+						</a>
+					</li>
+					<li class="separator">
+						<i class="flaticon-right-arrow"></i>
+					</li>
+					<li class="nav-item">
+						<a href="#">Analyzer</a>
+					</li>
+					<li class="separator">
+						<i class="flaticon-right-arrow"></i>
+					</li>
+					<li class="nav-item">
+						<a href="#">PEM Analyze</a>
+					</li>
+				</ul>
+				
+			</div>
+
+			{% for message in get_flashed_messages() %}
+ 			<div class="alert alert-warning">
+ 				<button type="button" class="close" data-dismiss="alert">&times;</button>
+ 					{{ message }}
+ 			</div>
+ 			{% endfor %}
+
+
+
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header">
+							<h4 class="card-title">PKIZONE REST API for PKI/CA</h4>
+						</div>
+
+                        
+
+						<div class="card-body n-5">
+							
+
+                            <div class="form-group">
+                                <label for="server">API SERVER</label>
+                                <input type="text" class="form-control" id="server" placeholder="server" name="server" required
+                                value="https://www.cryptoencode.net:20002">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="username">User Name</label>
+                                <input type="text" class="form-control input-full" id="username" name="username" value="demo" placeholder="user namne">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="username">Client ID</label>
+                                <input type="email" class="form-control input-full" id="clientid" name="clientid" value="demo@email.com" placeholder="client id(email format recommanded) ">
+                            </div>
+
+
+                            <div class="form-group">
+                                
+                            </div>
+
+							<div class="form-group ">
+								<div class="form-group">
+                                    [1] Generate Ticket for CA
+									<p class="demo">
+										<button class="btn btn-sm btn-primary btn-round btn-border" type="submit" name="action" value="ticket">
+											generate server ticket
+										</button>
+									</p>
+								</div>
+							</div>
+
+
+                            <div class="form-group">
+                                <div class="form-group form-inline">
+                					<label for="inlineinput">[2] Generate keypair for user(default: demo) </label>
+								</div>
+                                <div class="form-group ">
+                                    <p class="demo">
+                                        <button class="btn btn-sm btn-primary btn-round btn-border" type="submit" name="action" value="genkey">
+                                            Generate User Keypair
+                                        </button>
+                                    </p>
+                                </div>
+							</div>
+
+                            <div class="form-group">
+                                <div class="form-group form-inline">
+                					<label for="inlineinput">[3] Register User(default: demo@email.com) </label>
+								</div>
+                                <div class="form-group ">
+                                    <p class="demo">
+                                        <button class="btn btn-sm btn-primary btn-round btn-border" type="submit" name="action" value="register">
+                                            Register User
+                                        </button>
+                                    </p>
+                                </div>
+							</div>
+
+                            <div class="form-group">
+                                <div class="form-group form-inline">
+                					<label for="inlineinput">[4] Sign</label>
+								</div>
+                                <div class="form-group ">
+                                    <p class="demo">
+                                        <button class="btn btn-sm btn-primary btn-round btn-border" type="submit" name="action" value="sign">
+                                            Generate key pair and request issuing certificate to PKIZONE
+                                        </button>
+                                    </p>
+                                </div>
+							</div>
+
+                            <div class="form-group">
+                                <div class="form-group form-inline">
+                					<label for="inlineinput">[5] Xsign</label>
+								</div>
+                                <div class="form-group ">
+                                    <p class="demo">
+                                        <button class="btn btn-sm btn-primary btn-round btn-border" type="submit" name="action" value="xsign">
+                                            Request issuing keypair and certificate to PKIZONE
+                                        </button>
+                                    </p>
+                                </div>
+							</div>
+
+                            <div class="form-group">
+                                <div class="form-group form-inline">
+                					<label for="inlineinput">[5] CA Certificate</label>
+								</div>
+                                <div class="form-group ">
+                                    <p class="demo">
+                                        <button class="btn btn-sm btn-primary btn-round btn-border" type="submit" name="action" value="cacert">
+                                            Request CA Certiticate of PKIZONE
+                                        </button>
+                                    </p>
+                                </div>
+
+                                {% if download_cacert==True %}
+                                <div class="form-group ">
+                                    <p class="demo">
+                                        <button class="btn btn-sm btn-primary btn-round btn-border" type="submit" name="action" value="download_cacert">
+                                            Download CA Certiticate
+                                        </button>
+                                    </p>
+                                </div>
+                                {%endif%}
+							</div>
+
+                            <div class="form-group">
+                                <div class="form-group form-inline">
+                					<label for="inlineinput">[6] revoke certificate</label>
+								</div>
+                                <div class="form-group ">
+                                    <pre>connect to server, and do
+#>cd /home/ubuntu/pkizone/ca.services
+#>./run.sh revoke [cert-file-name]</pre>
+                                </div>
+
+                                
+							</div>
+
+
+                            <div class="form-group">
+                                <div class="form-group form-inline">
+                					<label for="inlineinput">[7] Generate CRL</label>
+								</div>
+                                <div class="form-group ">
+                                    <p class="demo">
+                                        <button class="btn btn-sm btn-primary btn-round btn-border" type="submit" name="action" value="gencrl">
+                                            Generate CRL(Certificate Revocation List)
+                                        </button>
+                                    </p>
+                                </div>
+
+                                {% if download_crl==True %}
+                                <div class="form-group ">
+                                    <p class="demo">
+                                        <button class="btn btn-sm btn-primary btn-round btn-border" type="submit" name="action" value="download_crl">
+                                            Download CRL
+                                        </button>
+                                    </p>
+                                </div>
+                                {%endif%}
+							</div>
+
+
+                            <div class="form-group">
+                                <div class="form-group form-inline">
+                					<label for="inlineinput">[8] Certificate List</label>
+								</div>
+                                <div class="form-group ">
+                                    <p class="demo">
+                                        <button class="btn btn-sm btn-primary btn-round btn-border" type="submit" name="action" value="database">
+                                            Get Database(certificate list)
+                                        </button>
+                                    </p>
+                                </div>
+							</div>
+
+
+
+
+
+
+						</div>
+					</div>
+				</div>
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header">
+							<h4 class="card-title">Result</h4>
+						</div>
+						<div class="card-body">
+							<p class="demo">
+								<div class="form-group">
+
+									{% if errtype == 'error' %}
+										<p class="text-danger">{{ errmsg }}</p>
+									{% endif %}
+
+                                    {% if message %}
+                                    <pre>{{message}}</pre>
+                                    {%endif%}
+
+								    <textarea class="form-control" id="pem-data-parsed" rows="10">{{result}}</textarea>
+							    </div>
+							</p>
+						</div>
+					</div>
+				</div>
+				
+				
+			</div>
+		</div>
+	</div>
+
+</form>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+	<!-- Atlantis DEMO methods, don't include it in your project! -->
+	<script src="/static/assets/js/setting-demo2.js"></script>
+
+{% endblock javascripts %}
